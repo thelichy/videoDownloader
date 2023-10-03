@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
-from downloader import download_playlist, download_video
+from downloader import download_playlist, download_single
 
 
 
@@ -15,11 +15,11 @@ def save_data():
         if download_type == 'Playlist':
             download_playlist(url, extension, only_audio, path)
         else:
-            download_video(url, extension, only_audio, path)
+            download_single(url, extension, only_audio, path)
 
         messagebox.showinfo("Concluído", "Os vídeos foram baixados")
     except:
-        messagebox.showinfo(f'Não foi possível baixar todos os vídeos')
+        messagebox.showinfo('Erro', 'Não foi possível baixar todos os vídeos')
 
 
 def browse_path():
