@@ -11,12 +11,15 @@ def save_data():
     only_audio = only_audio_var.get()
     path = path_label.cget('text')
 
-    if download_type == 'Playlist':
-        download_playlist(url, extension, only_audio, path)
-    else:
-        download_video(url, extension, only_audio, path)
+    try:
+        if download_type == 'Playlist':
+            download_playlist(url, extension, only_audio, path)
+        else:
+            download_video(url, extension, only_audio, path)
 
-    messagebox.showinfo("Concluído", "Os vídeos foram baixados")
+        messagebox.showinfo("Concluído", "Os vídeos foram baixados")
+    except:
+        messagebox.showinfo(f'Não foi possível baixar todos os vídeos')
 
 
 def browse_path():
