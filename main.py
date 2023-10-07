@@ -1,99 +1,85 @@
-import tkinter as tk
-import ttkthemes as th
-from tkinter.font import Font
-from tkinter import ttk, messagebox, filedialog
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QComboBox, QLineEdit, QPushButton, QFileDialog, QCheckBox, QRadioButton, QMessageBox
 from downloader import download_playlist, download_single
 
 
+class VideoDownloaderApp(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Baixar vídeos')
+        self.setGeometry(100, 100, 500, 300)
 
-def save_data():
-    download_type = type_combobox.get()
-    url = url_entry.get()
-    extension = extension_var.get()
-    only_audio = only_audio_var.get()
-    path = path_label.cget('text')
+        self.initUI()
 
-    try:
-        if download_type == 'Playlist':
-            download_playlist(url, extension, only_audio, path)
-        else:
-            download_single(url, extension, only_audio, path)
+    def initUI(self):
+        self.type_label = QLabel('Tipo:', self)
+        self.type_label.setGeometry(20, 20, 80, 30)
 
-        messagebox.showinfo('Concluído', 'Os vídeos foram baixados')
-    except:
-        messagebox.showinfo('Erro', 'Não foi possível baixar os vídeos')
+        self.type_combobox = QComboBox(self)
+        self.type_combobox.setGeometry(110, 20, 120, 30)
+        self.type_combobox.addItems(['Playlist', 'Video'])
+
+        self.url_label = QLabel('URL:', self)
+        self.url_label.setGeometry(20, 60, 80, 30)
+
+        self.url_entry = QLineEdit(self)
+        self.url_entry.setGeometry(110, 60, 280, 30)
+
+        self.clear_button = QPushButton('Limpar', self)
+        self.clear_button.setGeometry(400, 60, 80, 30)
+        self.clear_button.clicked.connect(self.clear_url)
+
+        self.extension_label = QLabel('Extensão:', self)
+        self.extension_label.setGeometry(20, 100, 80, 30)
+
+        self.mp3_radio = QRadioButton('MP3', self)
+        self.mp3_radio.setGeometry(110, 100, 80, 30)
+
+        self.mp4_radio = QRadioButton('MP4', self)
+        self.mp4_radio.setGeometry(200, 100, 80, 30)
+
+        self.only_audio_checkbox = QCheckBox('Apenas áudio', self)
+        self.only_audio_checkbox.setGeometry(20, 140, 200, 30)
+
+        self.browse_button = QPushButton('Selecionar Caminho', self)
+        self.browse_button.setGeometry(20, 180, 150, 30)
+        self.browse_button.clicked.connect(self.browse_path)
+
+        self.path_label = QLabel('', self)
+        self.path_label.setGeometry(180, 180, 300, 30)
+
+        self.save_button = QPushButton('Baixar', self)
+        self.save_button.setGeometry(20, 220, 150, 30)
+        self.save_button.clicked.connect(self.save_data)
+
+    def clear_url(self):
+        self.url_entry.clear()
+
+    def browse_path(self):
+        file_path = QFileDialog.getExistingDirectory(self, 'Selecionar Caminho')
+        if file_path:
+            self.path_label.setText(file_path)
+
+    def save_data(self):
+        download_type = self.type_combobox.currentText()
+        url = self.url_entry.text()
+        extension = 'mp3' if self.mp3_radio.isChecked() else 'mp4'
+        only_audio = self.only_audio_checkbox.isChecked()
+        path = self.path_label.text()
+
+        try:
+            if download_type == 'Playlist':
+                download_playlist(url, extension, only_audio, path)
+            else:
+                download_single(url, extension, only_audio, path)
+
+            QMessageBox.information(self, 'Concluído', 'Os vídeos foram baixados')
+        except Exception as e:
+            QMessageBox.critical(self, 'Erro', f'Não foi possível baixar os vídeos: {str(e)}')
 
 
-def clear_url():
-    url_entry.delete(0, 'end')
-
-
-def browse_path():
-    file_path = filedialog.askdirectory()
-    if file_path:
-        path_label.config(text=file_path)
-
-
-window = th.ThemedTk()
-window.set_theme('equilux')
-window.title('Baixar vídeos')
-
-style = ttk.Style()
-style.configure('TButton', padding=6, relief='flat', foreground='white')
-style.configure('TLabel', padding=6)
-style.configure('TRadiobutton', padding=6)
-style.configure('TCheckbutton', padding=6)
-
-frame = ttk.Frame(window)
-frame.pack()
-
-font = tk.font.Font(family='Arial', size=12)
-
-type_label = ttk.Label(frame, text='Tipo:', font=font)
-type_label.grid(row=0, column=0, sticky='w')
-
-available_types = ['Playlist', 'Video']
-type_combobox = ttk.Combobox(frame, values=available_types)
-type_combobox.grid(row=0, column=1)
-type_combobox.set(available_types[0])
-
-url_label = ttk.Label(frame, text='URL:', font=font)
-url_label.grid(row=1, column=0, sticky='w')
-
-url_entry = ttk.Entry(frame, width=40)
-url_entry.grid(row=1, column=1)
-
-clear_button = ttk.Button(frame, text='Limpar', command=clear_url)
-clear_button.grid(row=1, column=2)
-
-extension_label = ttk.Label(frame, text='Extensão:', font=font)
-extension_label.grid(row=2, column=0, sticky='w')
-
-extension_var = tk.StringVar()
-mp3_radio = ttk.Radiobutton(frame, text='MP3', variable=extension_var, value='mp3')
-mp4_radio = ttk.Radiobutton(frame, text='MP4', variable=extension_var, value='mp4')
-
-mp3_radio.grid(row=2, column=1)
-mp4_radio.grid(row=2, column=2)
-
-only_audio_var = tk.BooleanVar()
-only_audio_checkbox = ttk.Checkbutton(frame, text='Apenas áudio', variable=only_audio_var)
-only_audio_checkbox.grid(row=3, columnspan=2, sticky='w')
-
-browse_button = ttk.Button(frame, text='Selecionar Caminho', command=browse_path)
-browse_button.grid(row=5, column=0)
-
-path_label = ttk.Label(frame, text='')
-path_label.grid(row=5, column=1)
-
-save_button = ttk.Button(frame, text='Baixar', command=save_data)
-save_button.grid(row=6, column=0, columnspan=2)
-
-frame.configure()
-url_entry.configure(style='TEntry')
-
-type_label.configure(anchor='w')
-url_label.configure(anchor='w')
-extension_label.configure(anchor='w')
-
-window.mainloop()
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    mainWin = VideoDownloaderApp()
+    mainWin.show()
+    sys.exit(app.exec_())
