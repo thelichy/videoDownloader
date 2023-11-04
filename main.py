@@ -4,12 +4,21 @@ from downloader import download_playlist, download_single
 
 
 class VideoDownloaderApp(QMainWindow):
+	@staticmethod
+	def default():
+		app = QApplication(sys.argv)
+		mainWin = VideoDownloaderApp()
+		mainWin.show()
+		sys.exit(app.exec_())
+
+
 	def __init__(self):
 		super().__init__()
 		self.setWindowTitle('Baixar vídeos')
 		self.setGeometry(100, 100, 500, 300)
 
 		self.initUI()
+
 
 	def initUI(self):
 		self.type_label = QLabel('Tipo:', self)
@@ -39,10 +48,6 @@ class VideoDownloaderApp(QMainWindow):
 		self.mp4_radio = QRadioButton('MP4', self)
 		self.mp4_radio.setGeometry(200, 100, 80, 30)
 
-		self.only_audio_checkbox = QCheckBox('Apenas áudio', self)
-		self.only_audio_checkbox.setGeometry(20, 140, 200, 30)
-		self.only_audio_checkbox.setChecked(True)
-
 		self.browse_button = QPushButton('Selecionar Caminho', self)
 		self.browse_button.setGeometry(20, 180, 150, 30)
 		self.browse_button.clicked.connect(self.browse_path)
@@ -54,13 +59,16 @@ class VideoDownloaderApp(QMainWindow):
 		self.save_button.setGeometry(20, 220, 150, 30)
 		self.save_button.clicked.connect(self.save_data)
 
+
 	def clear_url(self):
 		self.url_entry.clear()
+
 
 	def browse_path(self):
 		file_path = QFileDialog.getExistingDirectory(self, 'Selecionar Caminho')
 		if file_path:
 			self.path_label.setText(file_path)
+
 
 	def validate_fields(self):
 		url = self.url_entry.text()
@@ -76,6 +84,7 @@ class VideoDownloaderApp(QMainWindow):
 
 		return True
 
+
 	def save_data(self):
 		if not self.validate_fields():
 			return
@@ -83,22 +92,16 @@ class VideoDownloaderApp(QMainWindow):
 		download_type = self.type_combobox.currentText()
 		url = self.url_entry.text()
 		extension = 'mp3' if self.mp3_radio.isChecked() else 'mp4'
-		only_audio = self.only_audio_checkbox.isChecked()
+		only_audio = extension == 'mp3'
 		path = self.path_label.text()
 
-		try:
-			if download_type == 'Playlist':
-				download_playlist(url, extension, only_audio, path)
-			else:
-				download_single(url, extension, only_audio, path)
+		if download_type == 'Playlist':
+			download_playlist(url, extension, only_audio, path)
+		else:
+			download_single(url, extension, only_audio, path)
 
-			QMessageBox.information(self, 'Concluído', 'Os vídeos foram baixados')
-		except Exception as e:
-			QMessageBox.critical(self, 'Erro', f'Não foi possível baixar os vídeos: {str(e)}')
+		QMessageBox.information(self, 'Concluído', 'Os vídeos foram baixados')
 
 
 if __name__ == '__main__':
-	app = QApplication(sys.argv)
-	mainWin = VideoDownloaderApp()
-	mainWin.show()
-	sys.exit(app.exec_())
+	VideoDownloaderApp.default()	
